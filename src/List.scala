@@ -55,6 +55,57 @@ object List {
       case Cons(h, t) if f(h) => dropWhile(t, f)
       case _ => l
     }
+
+  // Exercise 6
+  // Implement a function, init, that returns a List consisting of all but the
+  // last element of a List
+  def init[A](l: List[A]): List[A] = {
+    l match {
+      case Nil => Nil
+      case Cons(_, Nil) => Nil
+      case Cons(h, t) => Cons(h, init(t))
+    }
+  }
+
+  def foldRight[A,B](as: List[A], z: B)(f: (A, B) => B): B = // Utility functions
+    as match {
+      case Nil => z
+      case Cons(x, xs) => f(x, foldRight(xs, z)(f))
+    }
+
+  // Exercise 7
+  // Can product immediately halt the recursion and return 0.0 if it encounters a 0.0?
+  // No, because of early the evaluation of foldRight arguments
+
+  // Exercise 8
+  // See what happens when you pass Nil and Cons themselves to foldRight.
+  // It's the identity function
+
+  // Exercise 9
+  // Compute the length of a list using foldRight
+  def length[A](l: List[A]): Int =
+    foldRight(l, 0){ (x, y) => y + 1 }
+
+  // Exercise 10
+  // Write another general list-recursion function, foldLeft
+  @tailrec
+  def foldLeft[A, B](l: List[A], z: B)(f: (B, A) => B) : B =
+    l match {
+      case Nil => z
+      case Cons(x, xs) => foldLeft(xs, f(z, x))(f)
+    }
+
+  // Exercise 11
+  // Write sum, product and a function to compute the length of a list
+  // using foldLeft
+  def sum2(l: List[Int]) = foldLeft(l, 0)(_ + _)
+  def product2(l: List[Double]) = foldLeft(l, 1d)(_ * _)
+  def length2[A](l: List[A]): Int = foldLeft(l, 0){(x, _) => x + 1}
+
+  // Exercise 12
+  // Write a function that returns the reverse of a list
+  def reverse[A](l: List[A]): List[A] =
+    foldLeft(l, Nil: List[A])((t, h) => Cons(h, t))
 }
 
 object ListMain {
@@ -74,5 +125,12 @@ object ListMain {
 
     val l = List(1, 2, 3, 4, 5)
     println(drop(l, 2))
+    println(init(l))
+
+    // Exercise 8
+    println(foldRight(List(1, 2, 3, 4), Nil: List[Int])(Cons(_, _)))
+    println(length(l))
+
+    println(reverse(l))
   }
 }
