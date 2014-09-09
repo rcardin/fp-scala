@@ -1,8 +1,15 @@
-import scala.annotation.tailrec
+package cap3
 
-sealed trait List[+A] // `List` data type, parameterized on a type, `A`
-case object Nil extends List[Nothing] // A `List` data constructor representing the empty list
-case class Cons[+A](head: A, tail: List[A]) extends List[A] // Another data constructor, representing nonempty lists. Note that `tail` is another `List[A]`, which may be `Nil` or another `Cons`.
+import annotation.tailrec
+/**
+ * Created by famiglia on 09/09/2014.
+ */
+sealed trait List[+A]
+
+// A `List` data constructor representing the empty list
+case class Cons[+A](head: A, tail: List[A]) extends List[A]
+// `List` data type, parameterized on a type, `A`
+case object Nil extends List[Nothing]
 
 object List {
   // `List` companion object. Contains functions for creating and working with lists.
@@ -21,6 +28,12 @@ object List {
   def apply[A](as: A*): List[A] = // Variadic function syntax
     if (as.isEmpty) Nil
     else Cons(as.head, apply(as.tail: _*))
+
+//  def append[A](a1: List[A], a2: List[A]): List[A] =
+//    a1 match {
+//      case Nil => a2
+//      case Cons(h,t) => Cons(h, append(t, a2))
+//    }
 
   // Exercise 2
   // Implement a function tail for removing the first element of a List
@@ -106,6 +119,73 @@ object List {
   // Write a function that returns the reverse of a list
   def reverse[A](l: List[A]): List[A] =
     foldLeft(l, Nil: List[A])((t, h) => Cons(h, t))
+
+  // Exercise 13
+  // Can you write foldLeft in terms of foldRight? How about the
+  // other way around?
+  // TODO
+
+  // Exercise 14
+  // Implement append in terms of either foldLeft or foldRight
+  def append[A](a1: List[A], a2: List[A]): List[A] =
+    foldRight(a1, a2)(Cons(_, _))
+
+  // Exercise 15
+  // TODO
+
+  // Exercise 16
+  // Write a function that transforms a list of integers by adding 1 to each element.
+  def plusOne(l: List[Int]): List[Int] =
+    foldRight(l, Nil: List[Int])((h, t) => Cons(h + 1 , t))
+
+  // Exercise 17
+  // Write a function that turns each value in a List[Double] into a String.
+  def toString(l: List[Double]): List[String] =
+    foldRight(l, Nil: List[String])((h, t) => Cons(h.toString, t))
+
+  // Exercise 18
+  // Write a function map that generalizes modifying each element in a list
+  // while maintaining the structure of the list.
+  def map[A, B](l: List[A])(f: A => B): List[B] =
+    foldRight(l, Nil: List[B])((h, t) => Cons(f(h), t))
+
+  // Exercise 19
+  // Write a function filter that removes elements from a list unless they satisfy
+  // a given predicate
+  def filter[A](l: List[A])(f: A => Boolean): List[A] =
+    foldRight(l, Nil: List[A])((h, t) => if (f(h)) Cons(h, t) else t)
+
+  // Exercise 20
+  // Write a function flatMap that works like map except that the function given will
+  // return a list instead of a single result, and list should be inserted into the
+  // final resulting list.
+  def flatMap[A, B](l: List[A])(f: A => List[B]): List[B] =
+    foldRight(map(l)(f), Nil: List[B])(append)
+
+  // Exercise 21
+  // Use flatMap to implement filter
+  def filter2[A](l: List[A])(f: A => Boolean): List[A] =
+    flatMap(l)(h => if (f(h)) List(h) else Nil)
+
+  // Exercise 22
+  // Write a function that accepts two lists and constructs a new list by
+  // adding corresponding elements.
+  def addPairwise(l1: List[Int], l2: List[Int]): List[Int] =
+    (l1, l2) match {
+      case (Nil, _) => Nil
+      case (_, Nil) => Nil
+      case (Cons(h1, t1), Cons(h2, t2)) => Cons(h1 + h2, addPairwise(t1, t2))
+    }
+
+  // Exercise 23
+  // Generalize the function you just wrote so that it's not specific
+  // to integers or addition.
+  def zipWith[A, B, C](a: List[A], b: List[B])(f: (A, B) => C): List[C] =
+    (a, b) match {
+      case (Nil, _) => Nil
+      case (_, Nil) => Nil
+      case (Cons(h1, t1), Cons(h2, t2)) => Cons(f(h1, h2), zipWith(t1, t2)(f))
+    }
 }
 
 object ListMain {
@@ -132,5 +212,11 @@ object ListMain {
     println(length(l))
 
     println(reverse(l))
+
+    println(plusOne(l))
+
+    println(flatMap(List(1, 2, 3))(i => List(i, i)))
+
+    println(filter2(l)(h => h % 2 == 0))
   }
 }
