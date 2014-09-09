@@ -123,7 +123,8 @@ object List {
   // Exercise 13
   // Can you write foldLeft in terms of foldRight? How about the
   // other way around?
-  // TODO
+  def foldRightViaFoldLeft[A,B](as: List[A], z: B)(f: (A, B) => B): B =
+    foldLeft(reverse(as), z)((b, a) => f(a, b))
 
   // Exercise 14
   // Implement append in terms of either foldLeft or foldRight
