@@ -41,7 +41,7 @@ object Either {
   // Implement sequence and traverse for Either. These should return
   // the first error that's encountered, if there is one.
   def traverse[E, A, B](as: List[A])(f: A => Either[E, B]): Either[E, List[B]] =
-    as.foldRight[Either[E, List[B]]](Right(Nil)){(h, t) => f(h) map2(t)(_ :: _)}
+    as.foldRight[Either[E, List[B]]](Right(Nil)){(h, t) => f(h).map2(t)(_ :: _)}
 
   def traverse_1[E, A, B](as: List[A])(f: A => Either[E, B]): Either[E, List[B]] =
     as match {
@@ -49,6 +49,6 @@ object Either {
       case h :: t => (f(h) map2 traverse_1(t)(f))(_ :: _)
     }
 
-  def sequence[E, A](es: List[Either[E, A]]):Either[E, List[A]] = ???
-
+  def sequence[E, A](es: List[Either[E, A]]): Either[E, List[A]] =
+    traverse(es)(x => x)
 }
