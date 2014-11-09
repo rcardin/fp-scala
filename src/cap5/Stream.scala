@@ -65,6 +65,32 @@ sealed trait Stream[+A] {
   // soon as it encounters a nonmatching value.
   def forAll(p: A => Boolean): Boolean =
     foldRight(true)((a, b) => p(a) && b)
+
+  // Exercise 5
+  // Use foldRight to implement takeWhile
+  def takeWhile2(p: A => Boolean): Stream[A] =
+    foldRight(empty[A])((a, b) => if (p(a)) cons(a, b) else empty)
+
+  // Exercise 6
+  // Implement headOption using foldRight
+  // TODO
+
+  // Exercise 7
+  // Implement map, filter, append and flatMap using foldRight. The append method
+  // should be non-strict in its arguments
+  def map[B](f: A => B) : Stream[B] =
+    foldRight(empty[B])((h, t) => cons(f(h), t))
+
+  def filter(f: A => Boolean): Stream[A] =
+    foldRight(empty[A])((h, t) => if (f(h)) cons(h, t) else t)
+
+  def append[B>:A](s: => Stream[B]): Stream[B] =
+    foldRight(s)((h, t) => cons(h, t))
+
+  def flatMap[B](f: A => Stream[B]) : Stream[B] =
+    foldRight(empty[B])((h, t) => f(h) append(t))
+
+
 }
 case object Empty extends Stream[Nothing]
 case class Cons[+A](h: () => A, t: () => Stream[A]) extends Stream[A]
@@ -77,4 +103,18 @@ object Stream {
   }
 
   def empty[A]: Stream[A] = Empty
+
+  def apply[A](as: A*): Stream[A] =
+    if (as.isEmpty) empty
+    else cons(as.head, apply(as.tail: _*))
+
+  val ones: Stream[Int] = Stream.cons(1, ones)
+
+  // Exercise 8
+  // Generalize ones slightly to the function constant,
+  // which returns an infinite Stream of a given value.
+  def constant[A](a: A): Stream[A] = Stream.cons(a, constant(a)) // Dumb way...
+  // This way is more efficient, using memoization
+  //  lazy val tail: Stream[A] = Cons(() => a, () => tail)
+  //  tail
 }
