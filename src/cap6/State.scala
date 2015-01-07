@@ -92,5 +92,59 @@ object RNG {
       (f(a, b), rng2)
     }
 
+  def sequence[A](fs: List[Rand[A]]): Rand[List[A]] =
+    fs.foldRight(unit(List[A]()))((f, acc) => map2(f, acc)(_ :: _))
 
+  // Exercise 8
+  // Implement flatMap and than use it to implement nonNegativeLessThen.
+  def flatMap[A, B](f: Rand[A])(g: A => Rand[B]): Rand[B] = {
+    rng => {
+      val (a, r1) = f(rng)
+      g(a)(r1)
+    }
+  }
+
+  def nonNegativeLessThan(n: Int): Rand[Int] =
+    flatMap(nonNegativeInt) {
+      i =>
+        val mod = i % n
+        if (i + (n + 1) - mod >= 0) unit(mod)
+        else nonNegativeLessThan(n)
+    }
+
+  // Exercise 9
+  // Reimplement map and map2 in terms of flatMap.
+  def _map[A,B](s: Rand[A])(f: A => B): Rand[B] =
+    flatMap(s)(a => unit(f(a)))
+
+  def _map2[A, B, C](ra: Rand[A], rb: Rand[B])(f: (A, B) => C): Rand[C] =
+    flatMap(ra)(a => map(rb)(b => f(a, b))) // This is very hard to understand :P
+
+  import State._
+
+  case class State[S, +A](run: S => (A, S)) {
+    // Exercise 10
+    // Generalize the functions unit, map, map2, flatMap and sequence.
+    // Add them as methods on the State case class where possible.
+    // Otherwise you should put them in a State companion object.
+    def flatMap[B](g: A => State[S, B]): State[S, B] =
+      State(
+        s => {
+          val (a, s1) = run(s)
+          g(a).run(s1)
+        }
+      )
+    def map[B](f: A => B): State[S, B] =
+      flatMap(a => State.unit(f(a)))
+    def map2[B, C](sb: State[S, B])(f: (A, B) => C): State[S, C] =
+      flatMap(a => sb.map(b => f(a, b)))
+  }
+
+  // Companion object
+  object State {
+    def unit[S, A](a: A): State[S, A] =
+      State(s => (a, s))   // S is only the internal state
+    def sequence[S,A](l: List[State[S, A]]): State[S, List[A]] =
+      l.reverse.foldLeft(unit[S, List[A]](List()))((acc, f) => f.map2(acc)( _ :: _ ))
+  }
 }
