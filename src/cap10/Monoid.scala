@@ -41,33 +41,48 @@ object Monoid {
 
   val stringMonoid = new Monoid[String] {
     override def op(a1: String, a2: String): String = a1 + a2
-    override def zero: String = ""
+    override val zero: String = ""
   }
 
   def listMonoid[A] = new Monoid[List[A]] {
     override def op(a1: List[A], a2: List[A]): List[A] = a1 ++ a2
-    override def zero: List[A] = Nil
+    override val zero: List[A] = Nil
   }
 
   // Exercise 10.1
   // Give Monoid instances for integer addition, and multiplication as well as the Boolean operators
   val intAddition = new Monoid[Int] {
     override def op(a1: Int, a2: Int): Int = a1 + a2
-    override def zero: Int = 0
+    override val zero: Int = 0
   }
 
   val intMultiplication = new Monoid[Int] {
     override def op(a1: Int, a2: Int): Int = a1 * a2
-    override def zero: Int = 1
+    override val zero: Int = 1
   }
 
   val booleanOr = new Monoid[Boolean] {
     override def op(a1: Boolean, a2: Boolean): Boolean = a1 || a2
-    override def zero: Boolean = false
+    override val zero: Boolean = false
   }
 
   val booleanAnd = new Monoid[Boolean] {
     override def op(a1: Boolean, a2: Boolean): Boolean = a1 && a2
-    override def zero: Boolean = true
+    override val zero: Boolean = true
+  }
+
+  // Exercise 10.2
+  // Give a Monoid instance for combining Option values
+  def optionMonoid[A] = new Monoid[Option[A]] {
+    override def op(a1: scala.Option[A], a2: scala.Option[A]): scala.Option[A] = a1 orElse a2
+    override val zero: scala.Option[A] = None
+  }
+
+  // Exercise 10.3
+  // A function having the same argument and return type is sometimes called an endofunction.
+  // Write monoid for endofunction
+  def endoFunctionMonoid[A] = new Monoid[A => A] {
+    override def op(a1: (A) => A, a2: (A) => A): (A) => A = a1 andThen a2
+    override def zero: (A) => A = (x) => x
   }
 }
